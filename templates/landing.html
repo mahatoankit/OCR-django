@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center text-center py-5">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <h1 class="display-4 mb-4">Welcome to OCR App</h1>
+                <p class="lead mb-4">Upload images and extract text using our advanced OCR technology</p>
+                
+                <div class="row mt-5">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h3 class="card-title">New User?</h3>
+                                <p class="card-text">Create an account to get started with our OCR services.</p>
+                                <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">Sign Up</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h3 class="card-title">Already Registered?</h3>
+                                <p class="card-text">Login to your account to access your OCR dashboard.</p>
+                                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">Login</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

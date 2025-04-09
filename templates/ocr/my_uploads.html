@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3>My OCR Image Uploads</h3>
+        <a href="{% url 'upload_image' %}" class="btn btn-primary">Upload New Image</a>
+    </div>
+    <div class="card-body">
+        {% if uploads %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Upload Date</th>
+                        <th>OCR Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for upload in uploads %}
+                    <tr>
+                        <td>
+                            <img src="{{ upload.image.url }}" alt="OCR Image" style="max-height: 100px;">
+                        </td>
+                        <td>{{ upload.uploaded_at }}</td>
+                        <td>
+                            {% if upload.text_result %}
+                            <pre>{{ upload.text_result }}</pre>
+                            {% else %}
+                            <span class="text-muted">No OCR result available</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center">You haven't uploaded any images yet.</p>
+        <div class="text-center mt-3">
+            <a href="{% url 'upload_image' %}" class="btn btn-primary">Upload Your First Image</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
