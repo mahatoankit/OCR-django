@@ -1,45 +1,94 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="card">
-    <div class="card-header">
-        <h3>Admin Dashboard - All OCR Uploads</h3>
+  <div class="card-header">
+    <h3>Admin Dashboard - All Citizenship OCR Results</h3>
+  </div>
+  <div class="card-body">
+    {% if uploads %}
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Citizenship #</th>
+            <th>Name</th>
+            <th>Upload Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for upload in uploads %}
+          <tr>
+            <td>{{ upload.user.username }}</td>
+            <td>{{ upload.citizenship_no|default:"Unknown" }}</td>
+            <td>{{ upload.full_name|default:"Not detected" }}</td>
+            <td>{{ upload.uploaded_at }}</td>
+            <td>
+              <button
+                class="btn btn-sm btn-primary"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#details{{ upload.id }}"
+                aria-expanded="false"
+              >
+                View Details
+              </button>
+            </td>
+          </tr>
+          <tr class="collapse" id="details{{ upload.id }}">
+            <td colspan="5">
+              <div class="row">
+                <div class="col-md-4">
+                  <img
+                    src="{{ upload.image.url }}"
+                    alt="Citizenship Image"
+                    class="img-fluid mb-3"
+                  />
+                </div>
+                <div class="col-md-8">
+                  <div class="table-responsive">
+                    <table class="table table-bordered">
+                      <tbody>
+                        <tr>
+                          <th>Citizenship Number</th>
+                          <td>
+                            {{ upload.citizenship_no|default:"Not detected" }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Full Name</th>
+                          <td>{{ upload.full_name|default:"Not detected" }}</td>
+                        </tr>
+                        <tr>
+                          <th>Date of Birth</th>
+                          <td>{{ upload.dob|default:"Not detected" }}</td>
+                        </tr>
+                        <tr>
+                          <th>Father's Name</th>
+                          <td>
+                            {{ upload.father_name|default:"Not detected" }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Mother's Name</th>
+                          <td>
+                            {{ upload.mother_name|default:"Not detected" }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    <div class="card-body">
-        {% if uploads %}
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Image</th>
-                        <th>Upload Date</th>
-                        <th>OCR Result</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for upload in uploads %}
-                    <tr>
-                        <td>{{ upload.user.username }}</td>
-                        <td>
-                            <img src="{{ upload.image.url }}" alt="OCR Image" style="max-height: 100px;">
-                        </td>
-                        <td>{{ upload.uploaded_at }}</td>
-                        <td>
-                            {% if upload.text_result %}
-                            <pre>{{ upload.text_result }}</pre>
-                            {% else %}
-                            <span class="text-muted">No OCR result available</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p class="text-center">No images have been uploaded yet.</p>
-        {% endif %}
-    </div>
+    {% else %}
+    <p class="text-center">No images have been uploaded yet.</p>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
