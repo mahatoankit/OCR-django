@@ -4,7 +4,7 @@ from .forms import OCRImageForm
 from .models import OcrImage
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 
 
 
@@ -50,7 +50,6 @@ def admin_dashboard(request):
     all_uploads = OcrImage.objects.all().order_by('-uploaded_at')
     return render(request, 'ocr/admin_dashboard.html', {'uploads': all_uploads})
 
-from django.contrib.auth import logout
 
 def logout_view(request):
     """Logout view"""

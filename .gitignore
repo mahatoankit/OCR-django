@@ -26,3 +26,5 @@ local_settings.py
 
 # Mac
 .DS_Store
+dataExtraction.py
+imageProcessing.py
