@@ -24,26 +24,75 @@
             <td>{{ upload.full_name|default:"Not detected" }}</td>
             <td>{{ upload.uploaded_at }}</td>
             <td>
-              <button
-                class="btn btn-sm btn-primary"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#details{{ upload.id }}"
-                aria-expanded="false"
-              >
-                View Details
-              </button>
+              <div class="btn-group">
+                <button
+                  class="btn btn-sm btn-primary"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#details{{ upload.id }}"
+                  aria-expanded="false"
+                >
+                  View
+                </button>
+                <a
+                  href="{% url 'edit_ocr_data' upload.id %}"
+                  class="btn btn-sm btn-warning"
+                  >Edit</a
+                >
+                <a
+                  href="{% url 'delete_ocr_image' upload.id %}"
+                  class="btn btn-sm btn-danger"
+                  >Delete</a
+                >
+              </div>
             </td>
           </tr>
           <tr class="collapse" id="details{{ upload.id }}">
             <td colspan="5">
               <div class="row">
                 <div class="col-md-4">
-                  <img
-                    src="{{ upload.image.url }}"
-                    alt="Citizenship Image"
-                    class="img-fluid mb-3"
-                  />
+                  <div class="card mb-3">
+                    <div class="card-header">
+                      <h5>Images</h5>
+                    </div>
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-6">
+                          <p>Front:</p>
+                          <img
+                            src="{{ upload.front_image.url }}"
+                            alt="Front Image"
+                            class="img-fluid mb-2"
+                          />
+                          {% if upload.labeled_front_image %}
+                          <p>Labeled Front:</p>
+                          <img
+                            src="{{ upload.labeled_front_image.url }}"
+                            alt="Labeled Front"
+                            class="img-fluid"
+                          />
+                          {% endif %}
+                        </div>
+                        <div class="col-6">
+                          {% if upload.back_image %}
+                          <p>Back:</p>
+                          <img
+                            src="{{ upload.back_image.url }}"
+                            alt="Back Image"
+                            class="img-fluid mb-2"
+                          />
+                          {% endif %} {% if upload.labeled_back_image %}
+                          <p>Labeled Back:</p>
+                          <img
+                            src="{{ upload.labeled_back_image.url }}"
+                            alt="Labeled Back"
+                            class="img-fluid"
+                          />
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div class="col-md-8">
                   <div class="table-responsive">
@@ -64,6 +113,16 @@
                           <td>{{ upload.dob|default:"Not detected" }}</td>
                         </tr>
                         <tr>
+                          <th>Gender</th>
+                          <td>{{ upload.gender|default:"Not detected" }}</td>
+                        </tr>
+                        <tr>
+                          <th>Birth Place</th>
+                          <td>
+                            {{ upload.birth_place|default:"Not detected" }}
+                          </td>
+                        </tr>
+                        <tr>
                           <th>Father's Name</th>
                           <td>
                             {{ upload.father_name|default:"Not detected" }}
@@ -75,9 +134,38 @@
                             {{ upload.mother_name|default:"Not detected" }}
                           </td>
                         </tr>
+                        <tr>
+                          <th>Permanent Address</th>
+                          <td>
+                            {{ upload.permanent_address|default:"Not detected"
+                            }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Spouse's Name</th>
+                          <td>
+                            {{ upload.spouse_name|default:"Not detected" }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Issue Date</th>
+                          <td>
+                            {{ upload.issue_date|default:"Not detected" }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Issuing Authority</th>
+                          <td>{{ upload.authority|default:"Not detected" }}</td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>
+                  <pre
+                    class="border p-2 bg-light mt-3"
+                    style="max-height: 150px; overflow-y: auto"
+                  >
+{{ upload.text_result|default:"No text detected" }}</pre
+                  >
                 </div>
               </div>
             </td>

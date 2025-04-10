@@ -3,7 +3,7 @@
   <div class="card-header d-flex justify-content-between align-items-center">
     <h3>My Citizenship OCR Results</h3>
     <a href="{% url 'upload_image' %}" class="btn btn-primary"
-      >Upload New Image</a
+      >Upload New Card</a
     >
   </div>
   <div class="card-body">
@@ -20,7 +20,8 @@
             aria-expanded="false"
             aria-controls="collapse{{ upload.id }}"
           >
-            Citizenship #{{ upload.citizenship_no|default:"Unknown" }} - {{ upload.uploaded_at }}
+            Citizenship #{{ upload.citizenship_no|default:"Unknown" }} - {{
+            upload.full_name|default:"Unknown" }}
           </button>
         </h2>
         <div
@@ -30,20 +31,77 @@
           data-bs-parent="#uploadsAccordion"
         >
           <div class="accordion-body">
-            <div class="row">
-              <div class="col-md-4">
-                <img
-                  src="{{ upload.image.url }}"
-                  alt="Citizenship Image"
-                  class="img-fluid mb-3"
-                />
-                <p class="text-muted">
-                  Scanned on: {{
-                  upload.scan_date|default:upload.uploaded_at|date:"Y-m-d" }}
-                </p>
-              </div>
-              <div class="col-md-8">
-                <h5>Extracted Data</h5>
+            <ul
+              class="nav nav-tabs mb-3"
+              id="myTab{{ upload.id }}"
+              role="tablist"
+            >
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link active"
+                  id="data-tab{{ upload.id }}"
+                  data-bs-toggle="tab"
+                  data-bs-target="#data{{ upload.id }}"
+                  type="button"
+                  role="tab"
+                  aria-controls="data{{ upload.id }}"
+                  aria-selected="true"
+                >
+                  Extracted Data
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="images-tab{{ upload.id }}"
+                  data-bs-toggle="tab"
+                  data-bs-target="#images{{ upload.id }}"
+                  type="button"
+                  role="tab"
+                  aria-controls="images{{ upload.id }}"
+                  aria-selected="false"
+                >
+                  Original Images
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="labeled-tab{{ upload.id }}"
+                  data-bs-toggle="tab"
+                  data-bs-target="#labeled{{ upload.id }}"
+                  type="button"
+                  role="tab"
+                  aria-controls="labeled{{ upload.id }}"
+                  aria-selected="false"
+                >
+                  Labeled Images
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="json-tab{{ upload.id }}"
+                  data-bs-toggle="tab"
+                  data-bs-target="#json{{ upload.id }}"
+                  type="button"
+                  role="tab"
+                  aria-controls="json{{ upload.id }}"
+                  aria-selected="false"
+                >
+                  Raw JSON
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content" id="myTabContent{{ upload.id }}">
+              <!-- Extracted Data Tab -->
+              <div
+                class="tab-pane fade show active"
+                id="data{{ upload.id }}"
+                role="tabpanel"
+                aria-labelledby="data-tab{{ upload.id }}"
+              >
                 <div class="table-responsive">
                   <table class="table table-bordered">
                     <tbody>
@@ -70,18 +128,18 @@
                         <td>{{ upload.birth_place|default:"Not detected" }}</td>
                       </tr>
                       <tr>
-                        <th>Permanent Address</th>
-                        <td>
-                          {{ upload.permanent_address|default:"Not detected" }}
-                        </td>
-                      </tr>
-                      <tr>
                         <th>Father's Name</th>
                         <td>{{ upload.father_name|default:"Not detected" }}</td>
                       </tr>
                       <tr>
                         <th>Mother's Name</th>
                         <td>{{ upload.mother_name|default:"Not detected" }}</td>
+                      </tr>
+                      <tr>
+                        <th>Permanent Address</th>
+                        <td>
+                          {{ upload.permanent_address|default:"Not detected" }}
+                        </td>
                       </tr>
                       <tr>
                         <th>Spouse's Name</th>
@@ -95,19 +153,135 @@
                         <th>Issuing Authority</th>
                         <td>{{ upload.authority|default:"Not detected" }}</td>
                       </tr>
+                      <tr>
+                        <th>Scan Date</th>
+                        <td>
+                          {{
+                          upload.scan_date|date:"Y-m-d"|default:upload.uploaded_at|date:"Y-m-d"
+                          }}
+                        </td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
+              </div>
 
-                <div class="mt-3">
-                  <h6>Raw Extracted Data</h6>
-                  <pre
-                    class="border p-2 bg-light"
-                    style="max-height: 200px; overflow-y: auto"
-                  >
-{{ upload.text_result|default:"No data detected" }}</pre
-                  >
+              <!-- Original Images Tab -->
+              <div
+                class="tab-pane fade"
+                id="images{{ upload.id }}"
+                role="tabpanel"
+                aria-labelledby="images-tab{{ upload.id }}"
+              >
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="card h-100">
+                      <div class="card-header">
+                        <h5>Front Side</h5>
+                      </div>
+                      <div class="card-body text-center">
+                        <img
+                          src="{{ upload.front_image.url }}"
+                          alt="Front Side"
+                          class="img-fluid"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {% if upload.has_back_image %}
+                  <div class="col-md-6">
+                    <div class="card h-100">
+                      <div class="card-header">
+                        <h5>Back Side</h5>
+                      </div>
+                      <div class="card-body text-center">
+                        <img
+                          src="{{ upload.back_image.url }}"
+                          alt="Back Side"
+                          class="img-fluid"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  {% else %}
+                  <div class="col-md-6">
+                    <div class="card h-100">
+                      <div class="card-header">
+                        <h5>Back Side</h5>
+                      </div>
+                      <div class="card-body text-center">
+                        <p class="text-muted">No back image uploaded</p>
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
                 </div>
+              </div>
+
+              <!-- Labeled Images Tab -->
+              <div
+                class="tab-pane fade"
+                id="labeled{{ upload.id }}"
+                role="tabpanel"
+                aria-labelledby="labeled-tab{{ upload.id }}"
+              >
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="card h-100">
+                      <div class="card-header">
+                        <h5>Front Side (Labeled)</h5>
+                      </div>
+                      <div class="card-body text-center">
+                        {% if upload.labeled_front_image %}
+                        <img
+                          src="{{ upload.labeled_front_image.url }}"
+                          alt="Labeled Front Side"
+                          class="img-fluid"
+                        />
+                        {% else %}
+                        <p class="text-muted">No labeled image available</p>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="card h-100">
+                      <div class="card-header">
+                        <h5>Back Side (Labeled)</h5>
+                      </div>
+                      <div class="card-body text-center">
+                        {% if upload.labeled_back_image %}
+                        <img
+                          src="{{ upload.labeled_back_image.url }}"
+                          alt="Labeled Back Side"
+                          class="img-fluid"
+                        />
+                        {% else %}
+                        <p class="text-muted">
+                          No labeled back image available
+                        </p>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Raw JSON Tab -->
+              <div
+                class="tab-pane fade"
+                id="json{{ upload.id }}"
+                role="tabpanel"
+                aria-labelledby="json-tab{{ upload.id }}"
+              >
+                <pre
+                  class="border p-2 bg-light"
+                  style="max-height: 400px; overflow-y: auto"
+                >
+{{ upload.text_result|default:"No data detected" }}</pre
+                >
               </div>
             </div>
           </div>
@@ -119,7 +293,7 @@
     <p class="text-center">You haven't uploaded any citizenship images yet.</p>
     <div class="text-center mt-3">
       <a href="{% url 'upload_image' %}" class="btn btn-primary"
-        >Upload Your First Image</a
+        >Upload Your First Citizenship Card</a
       >
     </div>
     {% endif %}

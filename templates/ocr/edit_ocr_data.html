@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3>Edit Citizenship Data</h3>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Front Side</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <img src="{{ image.front_image.url }}" alt="Front Side" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            
+            {% if image.back_image %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Back Side</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <img src="{{ image.back_image.url }}" alt="Back Side" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.citizenship_no.id_for_label }}" class="form-label">Citizenship Number</label>
+                        {{ form.citizenship_no }}
+                        {% if form.citizenship_no.errors %}
+                        <div class="text-danger">{{ form.citizenship_no.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.full_name.id_for_label }}" class="form-label">Full Name</label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}
+                        <div class="text-danger">{{ form.full_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                        {{ form.gender }}
+                        {% if form.gender.errors %}
+                        <div class="text-danger">{{ form.gender.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.dob.id_for_label }}" class="form-label">Date of Birth</label>
+                        {{ form.dob }}
+                        {% if form.dob.errors %}
+                        <div class="text-danger">{{ form.dob.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.birth_place.id_for_label }}" class="form-label">Birth Place</label>
+                        {{ form.birth_place }}
+                        {% if form.birth_place.errors %}
+                        <div class="text-danger">{{ form.birth_place.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.father_name.id_for_label }}" class="form-label">Father's Name</label>
+                        {{ form.father_name }}
+                        {% if form.father_name.errors %}
+                        <div class="text-danger">{{ form.father_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.mother_name.id_for_label }}" class="form-label">Mother's Name</label>
+                        {{ form.mother_name }}
+                        {% if form.mother_name.errors %}
+                        <div class="text-danger">{{ form.mother_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.spouse_name.id_for_label }}" class="form-label">Spouse's Name</label>
+                        {{ form.spouse_name }}
+                        {% if form.spouse_name.errors %}
+                        <div class="text-danger">{{ form.spouse_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.permanent_address.id_for_label }}" class="form-label">Permanent Address</label>
+                        {{ form.permanent_address }}
+                        {% if form.permanent_address.errors %}
+                        <div class="text-danger">{{ form.permanent_address.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.issue_date.id_for_label }}" class="form-label">Issue Date</label>
+                        {{ form.issue_date }}
+                        {% if form.issue_date.errors %}
+                        <div class="text-danger">{{ form.issue_date.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.authority.id_for_label }}" class="form-label">Issuing Authority</label>
+                        {{ form.authority }}
+                        {% if form.authority.errors %}
+                        <div class="text-danger">{{ form.authority.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

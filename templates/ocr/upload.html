@@ -1,30 +1,69 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h3>Upload Image for OCR</h3>
-            </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.image.id_for_label }}" class="form-label">Select Image</label>
-                        {{ form.image }}
-                        {% if form.image.errors %}
-                        <div class="text-danger">
-                            {{ form.image.errors }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">Upload for OCR</button>
-                </form>
-            </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h3>Upload Citizenship Card Images</h3>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i> For best results, please upload
+          both front and back sides of the citizenship card.
         </div>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label for="{{ form.front_image.id_for_label }}" class="form-label">
+              <strong>{{ form.front_image.label }}</strong>
+            </label>
+            {{ form.front_image }} {% if form.front_image.help_text %}
+            <small class="form-text text-muted"
+              >{{ form.front_image.help_text }}</small
+            >
+            {% endif %} {% if form.front_image.errors %}
+            <div class="text-danger">{{ form.front_image.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ form.back_image.id_for_label }}" class="form-label">
+              <strong>{{ form.back_image.label }}</strong>
+            </label>
+            {{ form.back_image }} {% if form.back_image.help_text %}
+            <small class="form-text text-muted"
+              >{{ form.back_image.help_text }}</small
+            >
+            {% endif %} {% if form.back_image.errors %}
+            <div class="text-danger">{{ form.back_image.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="fas fa-upload"></i> Upload and Process
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+
+    <div class="card mt-4">
+      <div class="card-header">
+        <h4>Instructions</h4>
+      </div>
+      <div class="card-body">
+        <ol>
+          <li>Make sure the citizenship card images are clear and well-lit</li>
+          <li>All text on the card should be clearly visible</li>
+          <li>Upload both front and back sides for complete information</li>
+          <li>
+            Wait for the OCR processing to complete (may take a few seconds)
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

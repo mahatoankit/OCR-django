@@ -1,13 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .forms import OCRImageForm
+from django.core.files.base import ContentFile
+from .forms import OCRImageForm, OCRDataEditForm
 from .models import OcrImage
-from .citizenship_ocr import process_citizenship_image
+from .citizenship_ocr import process_citizenship_images, label_citizenship_image
 import json
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, logout
-
+from datetime import datetime
+from PIL import Image, ImageDraw, ImageFont
 
 
 def home(request):
@@ -24,16 +26,30 @@ def is_admin(user):
 
 @login_required
 def upload_image(request):
-    """View for users to upload citizenship images"""
+    """View for users to upload citizenship images (both sides)"""
     if request.method == "POST":
         form = OCRImageForm(request.POST, request.FILES)
         if form.is_valid():
             ocr_image = form.save(commit=False)
             ocr_image.user = request.user
 
-            # Process the image with Gemini OCR
+            # First save the model to store the images
+            ocr_image.save()
+
+            # Now process the images with OCR
             try:
-                extracted_data = process_citizenship_image(request.FILES["image"])
+                # Reopen the saved files for processing
+                with ocr_image.front_image.open("rb") as front_file:
+                    # Check if back image is provided
+                    back_file = None
+                    if ocr_image.back_image:
+                        back_file = ocr_image.back_image.open("rb")
+
+                    # Process the images
+                    extracted_data = process_citizenship_images(front_file, back_file)
+
+                    if back_file:
+                        back_file.close()
 
                 # Save raw OCR text as JSON representation
                 ocr_image.text_result = json.dumps(extracted_data, indent=2)
@@ -60,10 +76,41 @@ def upload_image(request):
                     except ValueError:
                         pass
 
-                ocr_image.save()
-                messages.success(
-                    request, "Citizenship card uploaded and processed successfully!"
-                )
+                # Generate labeled images
+                try:
+                    # Label front image
+                    with ocr_image.front_image.open("rb") as front_file:
+                        labeled_front = label_citizenship_image(
+                            front_file, is_front=True
+                        )
+                        ocr_image.labeled_front_image.save(
+                            f"labeled_front_{ocr_image.id}.png",
+                            ContentFile(labeled_front),
+                            save=False,
+                        )
+
+                    # Label back image if provided
+                    if ocr_image.back_image:
+                        with ocr_image.back_image.open("rb") as back_file:
+                            labeled_back = label_citizenship_image(
+                                back_file, is_front=False
+                            )
+                            ocr_image.labeled_back_image.save(
+                                f"labeled_back_{ocr_image.id}.png",
+                                ContentFile(labeled_back),
+                                save=False,
+                            )
+
+                    ocr_image.save()
+                    messages.success(
+                        request,
+                        "Citizenship card uploaded, processed, and labeled successfully!",
+                    )
+                except Exception as e:
+                    ocr_image.save()
+                    messages.warning(
+                        request, f"Images processed but labeling failed: {str(e)}"
+                    )
             except Exception as e:
                 ocr_image.save()  # Save even if OCR fails
                 messages.warning(
@@ -79,9 +126,8 @@ def upload_image(request):
 
 @login_required
 def my_uploads(request):
-    """View for users to see their uploads"""
-    uploads = OcrImage.objects.filter(user=request.user).order_by("-uploaded_at")
-    return render(request, "ocr/my_uploads.html", {"uploads": uploads})
+    uploads = OcrImage.objects.filter(user=request.user).order_by('-uploaded_at')
+    return render(request, 'ocr/my_uploads.html', {'uploads': uploads})
 
 
 @login_required
@@ -90,6 +136,64 @@ def admin_dashboard(request):
     """Admin view to see all uploads"""
     all_uploads = OcrImage.objects.all().order_by("-uploaded_at")
     return render(request, "ocr/admin_dashboard.html", {"uploads": all_uploads})
+
+
+@login_required
+@user_passes_test(is_admin)
+def edit_ocr_data(request, image_id):
+    """Admin view to edit OCR data"""
+    ocr_image = get_object_or_404(OcrImage, id=image_id)
+
+    if request.method == "POST":
+        form = OCRDataEditForm(request.POST, instance=ocr_image)
+        if form.is_valid():
+            # Save the form
+            form.save()
+
+            # Update the JSON text_result to reflect the changes
+            data = {
+                "full_name": form.cleaned_data["full_name"],
+                "father_name": form.cleaned_data["father_name"],
+                "mother_name": form.cleaned_data["mother_name"],
+                "gender": form.cleaned_data["gender"],
+                "citizenship_no": form.cleaned_data["citizenship_no"],
+                "dob": form.cleaned_data["dob"],
+                "birth_place": form.cleaned_data["birth_place"],
+                "permanent_address": form.cleaned_data["permanent_address"],
+                "spouse_name": form.cleaned_data["spouse_name"],
+                "issue_date": form.cleaned_data["issue_date"],
+                "authority": form.cleaned_data["authority"],
+                "scan_date": (
+                    ocr_image.scan_date.strftime("%Y-%m-%d")
+                    if ocr_image.scan_date
+                    else datetime.now().strftime("%Y-%m-%d")
+                ),
+            }
+
+            ocr_image.text_result = json.dumps(data, indent=2)
+            ocr_image.save()
+
+            messages.success(request, "Citizenship data updated successfully")
+            return redirect("admin_dashboard")
+    else:
+        form = OCRDataEditForm(instance=ocr_image)
+
+    return render(request, "ocr/edit_ocr_data.html", {"form": form, "image": ocr_image})
+
+
+@login_required
+@user_passes_test(is_admin)
+def delete_ocr_image(request, image_id):
+    """Admin view to delete OCR image"""
+    ocr_image = get_object_or_404(OcrImage, id=image_id)
+
+    if request.method == "POST":
+        # Delete the image and all associated files
+        ocr_image.delete()
+        messages.success(request, "Citizenship data deleted successfully")
+        return redirect("admin_dashboard")
+
+    return render(request, "ocr/confirm_delete.html", {"image": ocr_image})
 
 
 def logout_view(request):
