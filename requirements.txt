@@ -1,0 +1,7 @@
+Django==5.2
+Pillow
+psycopg2-binary
+python-dotenv
+pytesseract
+opencv-python
+googletrans==4.0.0-rc1

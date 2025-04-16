@@ -20,8 +20,8 @@
             aria-expanded="false"
             aria-controls="collapse{{ upload.id }}"
           >
-            Citizenship #{{ upload.citizenship_no|default:"Unknown" }} - {{
-            upload.full_name|default:"Unknown" }}
+            Citizenship #{{ upload.front.citizenship_no_en|default:"Unknown" }}
+            - {{ upload.front.full_name_en|default:"Unknown" }}
           </button>
         </h2>
         <div
@@ -108,56 +108,82 @@
                       <tr>
                         <th>Citizenship Number</th>
                         <td>
-                          {{ upload.citizenship_no|default:"Not detected" }}
+                          {{ upload.front.citizenship_no_en|default:"Not
+                          detected" }}
                         </td>
                       </tr>
                       <tr>
                         <th>Full Name</th>
-                        <td>{{ upload.full_name|default:"Not detected" }}</td>
+                        <td>
+                          {{ upload.front.full_name_en|default:"Not detected" }}
+                        </td>
                       </tr>
                       <tr>
                         <th>Gender</th>
-                        <td>{{ upload.gender|default:"Not detected" }}</td>
+                        <td>
+                          {{ upload.front.gender_en|default:"Not detected" }}
+                        </td>
                       </tr>
                       <tr>
                         <th>Date of Birth</th>
-                        <td>{{ upload.dob|default:"Not detected" }}</td>
+                        <td>
+                          {{ upload.front.dob_en|default:"Not detected" }}
+                        </td>
                       </tr>
                       <tr>
                         <th>Birth Place</th>
-                        <td>{{ upload.birth_place|default:"Not detected" }}</td>
+                        <td>
+                          {{ upload.front.birth_place_en|default:"Not detected"
+                          }}
+                        </td>
                       </tr>
                       <tr>
                         <th>Father's Name</th>
-                        <td>{{ upload.father_name|default:"Not detected" }}</td>
+                        <td>
+                          {{ upload.front.father_name_en|default:"Not detected"
+                          }}
+                        </td>
                       </tr>
                       <tr>
                         <th>Mother's Name</th>
-                        <td>{{ upload.mother_name|default:"Not detected" }}</td>
+                        <td>
+                          {{ upload.front.mother_name_en|default:"Not detected"
+                          }}
+                        </td>
                       </tr>
                       <tr>
                         <th>Permanent Address</th>
                         <td>
-                          {{ upload.permanent_address|default:"Not detected" }}
+                          {{ upload.front.permanent_address_en|default:"Not
+                          detected" }}
                         </td>
                       </tr>
                       <tr>
                         <th>Spouse's Name</th>
-                        <td>{{ upload.spouse_name|default:"Not detected" }}</td>
+                        <td>
+                          {{ upload.front.spouse_name_en|default:"Not detected"
+                          }}
+                        </td>
                       </tr>
+                      {% if upload.back %}
                       <tr>
                         <th>Issue Date</th>
-                        <td>{{ upload.issue_date|default:"Not detected" }}</td>
+                        <td>
+                          {{ upload.back.issue_date_en|default:"Not detected" }}
+                        </td>
                       </tr>
                       <tr>
                         <th>Issuing Authority</th>
-                        <td>{{ upload.authority|default:"Not detected" }}</td>
+                        <td>
+                          {{ upload.back.authority_en|default:"Not detected" }}
+                        </td>
                       </tr>
+                      {% endif %}
                       <tr>
                         <th>Scan Date</th>
                         <td>
                           {{
-                          upload.scan_date|date:"Y-m-d"|default:upload.uploaded_at|date:"Y-m-d"
+                          upload.front.scan_date|date:"Y-m-d"|default:upload.front.uploaded_at|date:"Y-m-d"
                           }}
                         </td>
                       </tr>
@@ -181,7 +207,7 @@
                       </div>
                       <div class="card-body text-center">
                         <img
-                          src="{{ upload.front_image.url }}"
+                          src="{{ upload.front.front_image.url }}"
                           alt="Front Side"
                           class="img-fluid"
                         />
@@ -189,7 +215,7 @@
                     </div>
                   </div>
 
-                  {% if upload.has_back_image %}
+                  {% if upload.back %}
                   <div class="col-md-6">
                     <div class="card h-100">
                       <div class="card-header">
@@ -197,7 +223,7 @@
                       </div>
                       <div class="card-body text-center">
                         <img
-                          src="{{ upload.back_image.url }}"
+                          src="{{ upload.back.back_image.url }}"
                           alt="Back Side"
                           class="img-fluid"
                         />
@@ -233,9 +259,9 @@
                         <h5>Front Side (Labeled)</h5>
                       </div>
                       <div class="card-body text-center">
-                        {% if upload.labeled_front_image %}
+                        {% if upload.front.labeled_front_image %}
                         <img
-                          src="{{ upload.labeled_front_image.url }}"
+                          src="{{ upload.front.labeled_front_image.url }}"
                           alt="Labeled Front Side"
                           class="img-fluid"
                         />
@@ -252,9 +278,9 @@
                         <h5>Back Side (Labeled)</h5>
                       </div>
                       <div class="card-body text-center">
-                        {% if upload.labeled_back_image %}
+                        {% if upload.back.labeled_back_image %}
                         <img
-                          src="{{ upload.labeled_back_image.url }}"
+                          src="{{ upload.back.labeled_back_image.url }}"
                           alt="Labeled Back Side"
                           class="img-fluid"
                         />

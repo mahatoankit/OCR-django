@@ -2,14 +2,23 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.files.base import ContentFile
-from .forms import OCRImageForm, OCRDataEditForm
-from .models import OcrImage
+from .forms import (
+    OCRImageForm,
+    OCRDataEditForm,
+    CitizenshipFrontForm,
+    CitizenshipBackForm,
+)
+from .models import OcrImage, CitizenshipFront, CitizenshipBack
 from .citizenship_ocr import process_citizenship_images, label_citizenship_image
 import json
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, logout
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
+import logging
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -30,89 +39,126 @@ def upload_image(request):
     if request.method == "POST":
         form = OCRImageForm(request.POST, request.FILES)
         if form.is_valid():
-            ocr_image = form.save(commit=False)
-            ocr_image.user = request.user
+            front_image = form.cleaned_data["front_image"]
+            back_image = form.cleaned_data["back_image"]
 
-            # First save the model to store the images
-            ocr_image.save()
+            # First, create and save the CitizenshipFront instance
+            front_data = CitizenshipFront(user=request.user, front_image=front_image)
+            front_data.save()
 
-            # Now process the images with OCR
+            # Process front image with OCR
             try:
-                # Reopen the saved files for processing
-                with ocr_image.front_image.open("rb") as front_file:
-                    # Check if back image is provided
+                # Process the front image
+                with front_data.front_image.open("rb") as front_file:
+                    # Process the images - gets both English and Nepali data
                     back_file = None
-                    if ocr_image.back_image:
-                        back_file = ocr_image.back_image.open("rb")
+                    if back_image:
+                        # Create CitizenshipBack instance if back image is provided
+                        back_data = CitizenshipBack(
+                            front=front_data, back_image=back_image
+                        )
+                        back_data.save()
+                        back_file = back_data.back_image.open("rb")
 
-                    # Process the images
+                    # Process both images if available
                     extracted_data = process_citizenship_images(front_file, back_file)
 
                     if back_file:
                         back_file.close()
 
-                # Save raw OCR text as JSON representation
-                ocr_image.text_result = json.dumps(extracted_data, indent=2)
+                # Save raw OCR text as JSON representation for front data
+                front_data.text_result = json.dumps(extracted_data, indent=2)
 
-                # Save structured data
-                ocr_image.full_name = extracted_data.get("full_name")
-                ocr_image.father_name = extracted_data.get("father_name")
-                ocr_image.mother_name = extracted_data.get("mother_name")
-                ocr_image.gender = extracted_data.get("gender")
-                ocr_image.citizenship_no = extracted_data.get("citizenship_no")
-                ocr_image.dob = extracted_data.get("dob")
-                ocr_image.birth_place = extracted_data.get("birth_place")
-                ocr_image.permanent_address = extracted_data.get("permanent_address")
-                ocr_image.spouse_name = extracted_data.get("spouse_name")
-                ocr_image.issue_date = extracted_data.get("issue_date")
-                ocr_image.authority = extracted_data.get("authority")
+                # Save English structured data to front model
+                front_data.full_name_en = extracted_data.get("full_name")
+                front_data.father_name_en = extracted_data.get("father_name")
+                front_data.mother_name_en = extracted_data.get("mother_name")
+                front_data.gender_en = extracted_data.get("gender")
+                front_data.citizenship_no_en = extracted_data.get("citizenship_no")
+                front_data.dob_en = extracted_data.get("dob")
+                front_data.birth_place_en = extracted_data.get("birth_place")
+                front_data.permanent_address_en = extracted_data.get(
+                    "permanent_address"
+                )
+                front_data.spouse_name_en = extracted_data.get("spouse_name")
+
+                # Save Nepali structured data to front model
+                front_data.full_name_np = extracted_data.get("full_name_np")
+                front_data.father_name_np = extracted_data.get("father_name_np")
+                front_data.mother_name_np = extracted_data.get("mother_name_np")
+                front_data.gender_np = extracted_data.get("gender_np")
+                front_data.citizenship_no_np = extracted_data.get("citizenship_no_np")
+                front_data.dob_np = extracted_data.get("dob_np")
+                front_data.birth_place_np = extracted_data.get("birth_place_np")
+                front_data.permanent_address_np = extracted_data.get(
+                    "permanent_address_np"
+                )
+                front_data.spouse_name_np = extracted_data.get("spouse_name_np")
 
                 # Parse the scan date if available
                 if "scan_date" in extracted_data:
                     try:
-                        ocr_image.scan_date = datetime.strptime(
+                        front_data.scan_date = datetime.strptime(
                             extracted_data["scan_date"], "%Y-%m-%d"
                         ).date()
                     except ValueError:
                         pass
 
-                # Generate labeled images
+                # Save back side data if back image was provided
+                if back_image and "back_data" in locals():
+                    back_data.issue_date_en = extracted_data.get("issue_date")
+                    back_data.authority_en = extracted_data.get("authority")
+                    back_data.issue_date_np = extracted_data.get("issue_date_np")
+                    back_data.authority_np = extracted_data.get("authority_np")
+                    back_data.scan_date = front_data.scan_date
+                    back_data.save()
+
+                # Create the OcrImage wrapper that links front and optionally back
+                ocr_image = OcrImage(
+                    user=request.user,
+                    front=front_data,
+                    text_result=front_data.text_result,
+                )
+
+                if back_image and "back_data" in locals():
+                    ocr_image.back = back_data
+
+                ocr_image.save()
+
+                # Label images
                 try:
                     # Label front image
-                    with ocr_image.front_image.open("rb") as front_file:
+                    with front_data.front_image.open("rb") as front_file:
                         labeled_front = label_citizenship_image(
                             front_file, is_front=True
                         )
-                        ocr_image.labeled_front_image.save(
-                            f"labeled_front_{ocr_image.id}.png",
+                        front_data.labeled_front_image.save(
+                            f"labeled_front_{front_data.id}.png",
                             ContentFile(labeled_front),
-                            save=False,
+                            save=True,
                         )
 
                     # Label back image if provided
-                    if ocr_image.back_image:
-                        with ocr_image.back_image.open("rb") as back_file:
+                    if back_image and "back_data" in locals():
+                        with back_data.back_image.open("rb") as back_file:
                             labeled_back = label_citizenship_image(
                                 back_file, is_front=False
                             )
-                            ocr_image.labeled_back_image.save(
-                                f"labeled_back_{ocr_image.id}.png",
+                            back_data.labeled_back_image.save(
+                                f"labeled_back_{back_data.id}.png",
                                 ContentFile(labeled_back),
-                                save=False,
+                                save=True,
                             )
 
-                    ocr_image.save()
                     messages.success(
                         request,
                         "Citizenship card uploaded, processed, and labeled successfully!",
                     )
                 except Exception as e:
-                    ocr_image.save()
                     messages.warning(
                         request, f"Images processed but labeling failed: {str(e)}"
                     )
             except Exception as e:
-                ocr_image.save()  # Save even if OCR fails
                 messages.warning(
                     request, f"Image uploaded but OCR processing failed: {str(e)}"
                 )
@@ -126,8 +172,8 @@ def upload_image(request):
 
 @login_required
 def my_uploads(request):
-    uploads = OcrImage.objects.filter(user=request.user).order_by('-uploaded_at')
-    return render(request, 'ocr/my_uploads.html', {'uploads': uploads})
+    uploads = OcrImage.objects.filter(user=request.user).order_by("-uploaded_at")
+    return render(request, "ocr/my_uploads.html", {"uploads": uploads})
 
 
 @login_required
@@ -143,42 +189,136 @@ def admin_dashboard(request):
 def edit_ocr_data(request, image_id):
     """Admin view to edit OCR data"""
     ocr_image = get_object_or_404(OcrImage, id=image_id)
+    front_data = ocr_image.front
+    back_data = (
+        ocr_image.back if hasattr(ocr_image, "back") and ocr_image.back else None
+    )
 
     if request.method == "POST":
-        form = OCRDataEditForm(request.POST, instance=ocr_image)
+        form = OCRDataEditForm(request.POST)
         if form.is_valid():
-            # Save the form
-            form.save()
+            # Update front data with English fields
+            front_data.full_name_en = form.cleaned_data["full_name_en"]
+            front_data.father_name_en = form.cleaned_data["father_name_en"]
+            front_data.mother_name_en = form.cleaned_data["mother_name_en"]
+            front_data.gender_en = form.cleaned_data["gender_en"]
+            front_data.citizenship_no_en = form.cleaned_data["citizenship_no_en"]
+            front_data.dob_en = form.cleaned_data["dob_en"]
+            front_data.birth_place_en = form.cleaned_data["birth_place_en"]
+            front_data.permanent_address_en = form.cleaned_data["permanent_address_en"]
+            front_data.spouse_name_en = form.cleaned_data["spouse_name_en"]
 
-            # Update the JSON text_result to reflect the changes
+            # Update front data with Nepali fields
+            front_data.full_name_np = form.cleaned_data["full_name_np"]
+            front_data.father_name_np = form.cleaned_data["father_name_np"]
+            front_data.mother_name_np = form.cleaned_data["mother_name_np"]
+            front_data.gender_np = form.cleaned_data["gender_np"]
+            front_data.citizenship_no_np = form.cleaned_data["citizenship_no_np"]
+            front_data.dob_np = form.cleaned_data["dob_np"]
+            front_data.birth_place_np = form.cleaned_data["birth_place_np"]
+            front_data.permanent_address_np = form.cleaned_data["permanent_address_np"]
+            front_data.spouse_name_np = form.cleaned_data["spouse_name_np"]
+
+            # Save front data
+            front_data.save()
+
+            # Update back data if available
+            if back_data:
+                back_data.issue_date_en = form.cleaned_data["issue_date_en"]
+                back_data.authority_en = form.cleaned_data["authority_en"]
+                back_data.issue_date_np = form.cleaned_data["issue_date_np"]
+                back_data.authority_np = form.cleaned_data["authority_np"]
+                back_data.save()
+
+            # Update JSON text result to reflect the changes
             data = {
-                "full_name": form.cleaned_data["full_name"],
-                "father_name": form.cleaned_data["father_name"],
-                "mother_name": form.cleaned_data["mother_name"],
-                "gender": form.cleaned_data["gender"],
-                "citizenship_no": form.cleaned_data["citizenship_no"],
-                "dob": form.cleaned_data["dob"],
-                "birth_place": form.cleaned_data["birth_place"],
-                "permanent_address": form.cleaned_data["permanent_address"],
-                "spouse_name": form.cleaned_data["spouse_name"],
-                "issue_date": form.cleaned_data["issue_date"],
-                "authority": form.cleaned_data["authority"],
+                # Front - English data
+                "full_name": form.cleaned_data["full_name_en"],
+                "father_name": form.cleaned_data["father_name_en"],
+                "mother_name": form.cleaned_data["mother_name_en"],
+                "gender": form.cleaned_data["gender_en"],
+                "citizenship_no": form.cleaned_data["citizenship_no_en"],
+                "dob": form.cleaned_data["dob_en"],
+                "birth_place": form.cleaned_data["birth_place_en"],
+                "permanent_address": form.cleaned_data["permanent_address_en"],
+                "spouse_name": form.cleaned_data["spouse_name_en"],
+                # Back - English data
+                "issue_date": form.cleaned_data["issue_date_en"],
+                "authority": form.cleaned_data["authority_en"],
+                # Front - Nepali data
+                "full_name_np": form.cleaned_data["full_name_np"],
+                "father_name_np": form.cleaned_data["father_name_np"],
+                "mother_name_np": form.cleaned_data["mother_name_np"],
+                "gender_np": form.cleaned_data["gender_np"],
+                "citizenship_no_np": form.cleaned_data["citizenship_no_np"],
+                "dob_np": form.cleaned_data["dob_np"],
+                "birth_place_np": form.cleaned_data["birth_place_np"],
+                "permanent_address_np": form.cleaned_data["permanent_address_np"],
+                "spouse_name_np": form.cleaned_data["spouse_name_np"],
+                # Back - Nepali data
+                "issue_date_np": form.cleaned_data["issue_date_np"],
+                "authority_np": form.cleaned_data["authority_np"],
+                # Additional data
                 "scan_date": (
-                    ocr_image.scan_date.strftime("%Y-%m-%d")
-                    if ocr_image.scan_date
+                    front_data.scan_date.strftime("%Y-%m-%d")
+                    if front_data.scan_date
                     else datetime.now().strftime("%Y-%m-%d")
                 ),
             }
 
+            # Update OcrImage text_result
             ocr_image.text_result = json.dumps(data, indent=2)
             ocr_image.save()
 
             messages.success(request, "Citizenship data updated successfully")
             return redirect("admin_dashboard")
     else:
-        form = OCRDataEditForm(instance=ocr_image)
+        # Prepare initial data for the form
+        initial_data = {
+            # Front - English data
+            "full_name_en": front_data.full_name_en,
+            "father_name_en": front_data.father_name_en,
+            "mother_name_en": front_data.mother_name_en,
+            "gender_en": front_data.gender_en,
+            "citizenship_no_en": front_data.citizenship_no_en,
+            "dob_en": front_data.dob_en,
+            "birth_place_en": front_data.birth_place_en,
+            "permanent_address_en": front_data.permanent_address_en,
+            "spouse_name_en": front_data.spouse_name_en,
+            # Front - Nepali data
+            "full_name_np": front_data.full_name_np,
+            "father_name_np": front_data.father_name_np,
+            "mother_name_np": front_data.mother_name_np,
+            "gender_np": front_data.gender_np,
+            "citizenship_no_np": front_data.citizenship_no_np,
+            "dob_np": front_data.dob_np,
+            "birth_place_np": front_data.birth_place_np,
+            "permanent_address_np": front_data.permanent_address_np,
+            "spouse_name_np": front_data.spouse_name_np,
+        }
 
-    return render(request, "ocr/edit_ocr_data.html", {"form": form, "image": ocr_image})
+        # Add back data if available
+        if back_data:
+            initial_data.update(
+                {
+                    "issue_date_en": back_data.issue_date_en,
+                    "authority_en": back_data.authority_en,
+                    "issue_date_np": back_data.issue_date_np,
+                    "authority_np": back_data.authority_np,
+                }
+            )
+
+        form = OCRDataEditForm(initial=initial_data)
+
+    # Pass both front and back images to the template
+    context = {
+        "form": form,
+        "image": ocr_image,
+        "front_data": front_data,
+        "back_data": back_data,
+    }
+
+    return render(request, "ocr/edit_ocr_data.html", context)
 
 
 @login_required

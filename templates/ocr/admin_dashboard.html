@@ -2,177 +2,438 @@
 <div class="card">
   <div class="card-header">
     <h3>Admin Dashboard - All Citizenship OCR Results</h3>
+
+    <!-- Language toggle tabs -->
+    <ul class="nav nav-tabs mt-3" id="mainLangTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active"
+          id="english-main-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#english-data-main"
+          type="button"
+          role="tab"
+          aria-selected="true"
+        >
+          English
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="nepali-main-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#nepali-data-main"
+          type="button"
+          role="tab"
+          aria-selected="false"
+        >
+          नेपाली
+        </button>
+      </li>
+    </ul>
   </div>
+
   <div class="card-body">
     {% if uploads %}
-    <div class="table-responsive">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Citizenship #</th>
-            <th>Name</th>
-            <th>Upload Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for upload in uploads %}
-          <tr>
-            <td>{{ upload.user.username }}</td>
-            <td>{{ upload.citizenship_no|default:"Unknown" }}</td>
-            <td>{{ upload.full_name|default:"Not detected" }}</td>
-            <td>{{ upload.uploaded_at }}</td>
-            <td>
-              <div class="btn-group">
-                <button
-                  class="btn btn-sm btn-primary"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#details{{ upload.id }}"
-                  aria-expanded="false"
-                >
-                  View
-                </button>
-                <a
-                  href="{% url 'edit_ocr_data' upload.id %}"
-                  class="btn btn-sm btn-warning"
-                  >Edit</a
-                >
-                <a
-                  href="{% url 'delete_ocr_image' upload.id %}"
-                  class="btn btn-sm btn-danger"
-                  >Delete</a
-                >
-              </div>
-            </td>
-          </tr>
-          <tr class="collapse" id="details{{ upload.id }}">
-            <td colspan="5">
-              <div class="row">
-                <div class="col-md-4">
-                  <div class="card mb-3">
-                    <div class="card-header">
-                      <h5>Images</h5>
-                    </div>
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col-6">
-                          <p>Front:</p>
-                          <img
-                            src="{{ upload.front_image.url }}"
-                            alt="Front Image"
-                            class="img-fluid mb-2"
-                          />
-                          {% if upload.labeled_front_image %}
-                          <p>Labeled Front:</p>
-                          <img
-                            src="{{ upload.labeled_front_image.url }}"
-                            alt="Labeled Front"
-                            class="img-fluid"
-                          />
-                          {% endif %}
+    <div class="tab-content" id="mainLangTabsContent">
+      <!-- English Data Tab -->
+      <div
+        class="tab-pane fade show active"
+        id="english-data-main"
+        role="tabpanel"
+        aria-labelledby="english-main-tab"
+      >
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Citizenship #</th>
+                <th>Name</th>
+                <th>Upload Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for upload in uploads %}
+              <tr>
+                <td>{{ upload.user.username }}</td>
+                <td>{{ upload.front.citizenship_no_en|default:"Unknown" }}</td>
+                <td>{{ upload.front.full_name_en|default:"Not detected" }}</td>
+                <td>{{ upload.uploaded_at }}</td>
+                <td>
+                  <div class="btn-group">
+                    <button
+                      class="btn btn-sm btn-primary"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#details-en-{{ upload.id }}"
+                      aria-expanded="false"
+                    >
+                      View
+                    </button>
+                    <a
+                      href="{% url 'edit_ocr_data' upload.id %}"
+                      class="btn btn-sm btn-warning"
+                      >Edit</a
+                    >
+                    <a
+                      href="{% url 'delete_ocr_image' upload.id %}"
+                      class="btn btn-sm btn-danger"
+                      >Delete</a
+                    >
+                  </div>
+                </td>
+              </tr>
+              <tr class="collapse" id="details-en-{{ upload.id }}">
+                <td colspan="5">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="card mb-3">
+                        <div class="card-header">
+                          <h5>Images</h5>
                         </div>
-                        <div class="col-6">
-                          {% if upload.back_image %}
-                          <p>Back:</p>
-                          <img
-                            src="{{ upload.back_image.url }}"
-                            alt="Back Image"
-                            class="img-fluid mb-2"
-                          />
-                          {% endif %} {% if upload.labeled_back_image %}
-                          <p>Labeled Back:</p>
-                          <img
-                            src="{{ upload.labeled_back_image.url }}"
-                            alt="Labeled Back"
-                            class="img-fluid"
-                          />
-                          {% endif %}
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col-6">
+                              <p>Front:</p>
+                              <img
+                                src="{{ upload.front.front_image.url }}"
+                                alt="Front Image"
+                                class="img-fluid mb-2"
+                              />
+                              {% if upload.front.labeled_front_image %}
+                              <p>Labeled Front:</p>
+                              <img
+                                src="{{ upload.front.labeled_front_image.url }}"
+                                alt="Labeled Front"
+                                class="img-fluid"
+                              />
+                              {% endif %}
+                            </div>
+                            <div class="col-6">
+                              {% if upload.back %}
+                              <p>Back:</p>
+                              <img
+                                src="{{ upload.back.back_image.url }}"
+                                alt="Back Image"
+                                class="img-fluid mb-2"
+                              />
+                              {% endif %} {% if upload.back.labeled_back_image
+                              %}
+                              <p>Labeled Back:</p>
+                              <img
+                                src="{{ upload.back.labeled_back_image.url }}"
+                                alt="Labeled Back"
+                                class="img-fluid"
+                              />
+                              {% endif %}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-                <div class="col-md-8">
-                  <div class="table-responsive">
-                    <table class="table table-bordered">
-                      <tbody>
-                        <tr>
-                          <th>Citizenship Number</th>
-                          <td>
-                            {{ upload.citizenship_no|default:"Not detected" }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Full Name</th>
-                          <td>{{ upload.full_name|default:"Not detected" }}</td>
-                        </tr>
-                        <tr>
-                          <th>Date of Birth</th>
-                          <td>{{ upload.dob|default:"Not detected" }}</td>
-                        </tr>
-                        <tr>
-                          <th>Gender</th>
-                          <td>{{ upload.gender|default:"Not detected" }}</td>
-                        </tr>
-                        <tr>
-                          <th>Birth Place</th>
-                          <td>
-                            {{ upload.birth_place|default:"Not detected" }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Father's Name</th>
-                          <td>
-                            {{ upload.father_name|default:"Not detected" }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Mother's Name</th>
-                          <td>
-                            {{ upload.mother_name|default:"Not detected" }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Permanent Address</th>
-                          <td>
-                            {{ upload.permanent_address|default:"Not detected"
-                            }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Spouse's Name</th>
-                          <td>
-                            {{ upload.spouse_name|default:"Not detected" }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Issue Date</th>
-                          <td>
-                            {{ upload.issue_date|default:"Not detected" }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Issuing Authority</th>
-                          <td>{{ upload.authority|default:"Not detected" }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <pre
-                    class="border p-2 bg-light mt-3"
-                    style="max-height: 150px; overflow-y: auto"
-                  >
+                    <div class="col-md-8">
+                      <div class="table-responsive">
+                        <table class="table table-bordered">
+                          <tbody>
+                            <tr>
+                              <th>Citizenship Number</th>
+                              <td>
+                                {{ upload.front.citizenship_no_en|default:"Not
+                                detected" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>Full Name</th>
+                              <td>
+                                {{ upload.front.full_name_en|default:"Not
+                                detected" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>Date of Birth</th>
+                              <td>
+                                {{ upload.front.dob_en|default:"Not detected" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>Gender</th>
+                              <td>
+                                {{ upload.front.gender_en|default:"Not detected"
+                                }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>Birth Place</th>
+                              <td>
+                                {{ upload.front.birth_place_en|default:"Not
+                                detected" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>Father's Name</th>
+                              <td>
+                                {{ upload.front.father_name_en|default:"Not
+                                detected" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>Mother's Name</th>
+                              <td>
+                                {{ upload.front.mother_name_en|default:"Not
+                                detected" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>Permanent Address</th>
+                              <td>
+                                {{
+                                upload.front.permanent_address_en|default:"Not
+                                detected" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>Spouse's Name</th>
+                              <td>
+                                {{ upload.front.spouse_name_en|default:"Not
+                                detected" }}
+                              </td>
+                            </tr>
+                            {% if upload.back %}
+                            <tr>
+                              <th>Issue Date</th>
+                              <td>
+                                {{ upload.back.issue_date_en|default:"Not
+                                detected" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>Issuing Authority</th>
+                              <td>
+                                {{ upload.back.authority_en|default:"Not
+                                detected" }}
+                              </td>
+                            </tr>
+                            {% endif %}
+                          </tbody>
+                        </table>
+                      </div>
+                      <pre
+                        class="border p-2 bg-light mt-3"
+                        style="max-height: 150px; overflow-y: auto"
+                      >
 {{ upload.text_result|default:"No text detected" }}</pre
-                  >
-                </div>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+                      >
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Nepali Data Tab -->
+      <div
+        class="tab-pane fade"
+        id="nepali-data-main"
+        role="tabpanel"
+        aria-labelledby="nepali-main-tab"
+      >
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>प्रयोगकर्ता</th>
+                <th>नागरिकता नंबर</th>
+                <th>नाम</th>
+                <th>अपलोड मिति</th>
+                <th>कार्यहरू</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for upload in uploads %}
+              <tr>
+                <td>{{ upload.user.username }}</td>
+                <td>{{ upload.front.citizenship_no_np|default:"अज्ञात" }}</td>
+                <td>{{ upload.front.full_name_np|default:"पत्ता लागेन" }}</td>
+                <td>{{ upload.uploaded_at }}</td>
+                <td>
+                  <div class="btn-group">
+                    <button
+                      class="btn btn-sm btn-primary"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#details-np-{{ upload.id }}"
+                      aria-expanded="false"
+                    >
+                      हेर्नुहोस्
+                    </button>
+                    <a
+                      href="{% url 'edit_ocr_data' upload.id %}"
+                      class="btn btn-sm btn-warning"
+                      >सम्पादन</a
+                    >
+                    <a
+                      href="{% url 'delete_ocr_image' upload.id %}"
+                      class="btn btn-sm btn-danger"
+                      >मेटाउनुहोस्</a
+                    >
+                  </div>
+                </td>
+              </tr>
+              <tr class="collapse" id="details-np-{{ upload.id }}">
+                <td colspan="5">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="card mb-3">
+                        <div class="card-header">
+                          <h5>तस्विरहरू</h5>
+                        </div>
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col-6">
+                              <p>अगाडि:</p>
+                              <img
+                                src="{{ upload.front.front_image.url }}"
+                                alt="Front Image"
+                                class="img-fluid mb-2"
+                              />
+                              {% if upload.front.labeled_front_image %}
+                              <p>लेबल गरिएको अगाडि:</p>
+                              <img
+                                src="{{ upload.front.labeled_front_image.url }}"
+                                alt="Labeled Front"
+                                class="img-fluid"
+                              />
+                              {% endif %}
+                            </div>
+                            <div class="col-6">
+                              {% if upload.back %}
+                              <p>पछाडि:</p>
+                              <img
+                                src="{{ upload.back.back_image.url }}"
+                                alt="Back Image"
+                                class="img-fluid mb-2"
+                              />
+                              {% endif %} {% if upload.back.labeled_back_image
+                              %}
+                              <p>लेबल गरिएको पछाडि:</p>
+                              <img
+                                src="{{ upload.back.labeled_back_image.url }}"
+                                alt="Labeled Back"
+                                class="img-fluid"
+                              />
+                              {% endif %}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-8">
+                      <div class="table-responsive">
+                        <table class="table table-bordered">
+                          <tbody>
+                            <tr>
+                              <th>नागरिकता नंबर</th>
+                              <td dir="auto">
+                                {{ upload.front.citizenship_no_np|default:"पत्ता
+                                लागेन" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>पूरा नाम</th>
+                              <td dir="auto">
+                                {{ upload.front.full_name_np|default:"पत्ता
+                                लागेन" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>जन्म मिति</th>
+                              <td dir="auto">
+                                {{ upload.front.dob_np|default:"पत्ता लागेन" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>लिङ्ग</th>
+                              <td dir="auto">
+                                {{ upload.front.gender_np|default:"पत्ता लागेन"
+                                }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>जन्मस्थान</th>
+                              <td dir="auto">
+                                {{ upload.front.birth_place_np|default:"पत्ता
+                                लागेन" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>बाबुको नाम</th>
+                              <td dir="auto">
+                                {{ upload.front.father_name_np|default:"पत्ता
+                                लागेन" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>आमाको नाम</th>
+                              <td dir="auto">
+                                {{ upload.front.mother_name_np|default:"पत्ता
+                                लागेन" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>स्थायी ठेगाना</th>
+                              <td dir="auto">
+                                {{
+                                upload.front.permanent_address_np|default:"पत्ता
+                                लागेन" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>जीवनसाथीको नाम</th>
+                              <td dir="auto">
+                                {{ upload.front.spouse_name_np|default:"पत्ता
+                                लागेन" }}
+                              </td>
+                            </tr>
+                            {% if upload.back %}
+                            <tr>
+                              <th>जारी मिति</th>
+                              <td dir="auto">
+                                {{ upload.back.issue_date_np|default:"पत्ता
+                                लागेन" }}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>जारी गर्ने अधिकारी</th>
+                              <td dir="auto">
+                                {{ upload.back.authority_np|default:"पत्ता
+                                लागेन" }}
+                              </td>
+                            </tr>
+                            {% endif %}
+                          </tbody>
+                        </table>
+                      </div>
+                      <pre
+                        class="border p-2 bg-light mt-3"
+                        style="max-height: 150px; overflow-y: auto"
+                      >
+{{ upload.text_result|default:"No text detected" }}</pre
+                      >
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
     {% else %}
     <p class="text-center">No images have been uploaded yet.</p>

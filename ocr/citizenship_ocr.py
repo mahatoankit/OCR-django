@@ -98,7 +98,6 @@ def label_citizenship_image(image_file, is_front=True):
             "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
             "/usr/share/fonts/TTF/DejaVuSans.ttf",
             "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf",
-            # Add more potential paths
         ]
 
         font = None
@@ -214,7 +213,7 @@ def extract_citizenship_data(image_file, is_front=True):
         is_front: Boolean indicating if it's front side
 
     Returns:
-        dict: Extracted data
+        dict: Extracted data in both English and Nepali
     """
     try:
         # Preprocess the image
@@ -225,17 +224,25 @@ def extract_citizenship_data(image_file, is_front=True):
             Analyze this front side of Nepali citizenship document carefully and extract these specific fields in JSON format:
             {
                 "full_name": "complete name in English",
+                "full_name_np": "complete name in Nepali देवनागरी script exactly as it appears on card",
                 "father_name": "father's name in English",
+                "father_name_np": "father's name in Nepali देवनागरी script exactly as it appears on card",
                 "mother_name": "mother's name in English",
+                "mother_name_np": "mother's name in Nepali देवनागरी script exactly as it appears on card",
                 "gender": "Male or Female",
+                "gender_np": "Gender in Nepali (पुरुष, महिला, or अन्य)",
                 "citizenship_no": "the citizenship number exactly as it appears",
+                "citizenship_no_np": "citizenship number in Nepali देवनागरी script if present",
                 "dob": "date of birth in YYYY-MM-DD format if possible",
+                "dob_np": "date of birth in Nepali देवनागरी script exactly as it appears on card",
                 "birth_place": "place of birth in English",
-                "spouse_name": "spouse name in English if present"
+                "birth_place_np": "place of birth in Nepali देवनागरी script exactly as it appears on card",
+                "spouse_name": "spouse name in English if present",
+                "spouse_name_np": "spouse name in Nepali देवनागरी script exactly as it appears on card (or empty if not present)"
             }
             
-            Look carefully for Nepali text (देवनागरी) and translate to English when needed.
-            Focus only on extracting these fields - no additional information.
+            IMPORTANT: For all Nepali fields with _np suffix, extract the exact Nepali text (देवनागरी) directly from the image as it appears.
+            DO NOT translate English to Nepali - extract the original Nepali text from the document.
             Return clean JSON with no markdown formatting or explanations.
             """
         else:
@@ -243,12 +250,15 @@ def extract_citizenship_data(image_file, is_front=True):
             Analyze this back side of Nepali citizenship document carefully and extract these specific fields in JSON format:
             {
                 "permanent_address": "complete permanent address in English",
+                "permanent_address_np": "complete permanent address in Nepali देवनागरी script exactly as it appears on card",
                 "issue_date": "issue date in YYYY-MM-DD format if possible",
-                "authority": "name of the issuing authority/office"
+                "issue_date_np": "issue date in Nepali देवनागरी script exactly as it appears on card",
+                "authority": "name of the issuing authority/office in English",
+                "authority_np": "name of the issuing authority/office in Nepali देवनागरी script exactly as it appears on card"
             }
             
-            Look carefully for Nepali text (देवनागरी) and translate to English when needed.
-            Focus only on extracting these fields - no additional information.
+            IMPORTANT: For all Nepali fields with _np suffix, extract the exact Nepali text (देवनागरी) directly from the image as it appears.
+            DO NOT translate English to Nepali - extract the original Nepali text from the document.
             Return clean JSON with no markdown formatting or explanations.
             """
 
