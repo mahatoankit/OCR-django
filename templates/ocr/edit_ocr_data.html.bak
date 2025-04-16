@@ -1,0 +1,371 @@
+{% extends 'base.html' %} {% load json_filters %} {% block content %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3>Edit Citizenship Data</h3>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary"
+      >Back to Dashboard</a
+    >
+  </div>
+  <div class="card-body">
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5>Front Side</h5>
+          </div>
+          <div class="card-body text-center">
+            <img
+              src="{{ front_data.front_image.url }}"
+              alt="Front Side"
+              class="img-fluid"
+            />
+          </div>
+        </div>
+      </div>
+
+      {% if back_data %}
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5>Back Side</h5>
+          </div>
+          <div class="card-body text-center">
+            <img
+              src="{{ back_data.back_image.url }}"
+              alt="Back Side"
+              class="img-fluid"
+            />
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <!-- Language Navigation Tabs -->
+      <ul class="nav nav-tabs mb-4" id="langTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="english-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#english-data"
+            type="button"
+            role="tab"
+            aria-controls="english-data"
+            aria-selected="true"
+          >
+            English
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="nepali-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#nepali-data"
+            type="button"
+            role="tab"
+            aria-controls="nepali-data"
+            aria-selected="false"
+          >
+            नेपाली
+          </button>
+        </li>
+      </ul>
+
+      <!-- Tab Content -->
+      <div class="tab-content" id="langTabsContent">
+        <!-- English Tab -->
+        <div
+          class="tab-pane fade show active"
+          id="english-data"
+          role="tabpanel"
+          aria-labelledby="english-tab"
+        >
+          <h4 class="mb-3">English Data</h4>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label
+                  for="{{ form.citizenship_no_en.id_for_label }}"
+                  class="form-label"
+                  >Citizenship Number</label
+                >
+                {{ form.citizenship_no_en }} {% if form.citizenship_no_en.errors
+                %}
+                <div class="text-danger">
+                  {{ form.citizenship_no_en.errors }}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.full_name_en.id_for_label }}"
+                  class="form-label"
+                  >Full Name</label
+                >
+                {{ form.full_name_en }} {% if form.full_name_en.errors %}
+                <div class="text-danger">{{ form.full_name_en.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.gender_en.id_for_label }}"
+                  class="form-label"
+                  >Gender</label
+                >
+                {{ form.gender_en }} {% if form.gender_en.errors %}
+                <div class="text-danger">{{ form.gender_en.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label for="{{ form.dob_en.id_for_label }}" class="form-label"
+                  >Date of Birth</label
+                >
+                {{ form.dob_en }} {% if form.dob_en.errors %}
+                <div class="text-danger">{{ form.dob_en.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.birth_place_en.id_for_label }}"
+                  class="form-label"
+                  >Birth Place</label
+                >
+                {{ form.birth_place_en }} {% if form.birth_place_en.errors %}
+                <div class="text-danger">{{ form.birth_place_en.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label
+                  for="{{ form.father_name_en.id_for_label }}"
+                  class="form-label"
+                  >Father's Name</label
+                >
+                {{ form.father_name_en }} {% if form.father_name_en.errors %}
+                <div class="text-danger">{{ form.father_name_en.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.mother_name_en.id_for_label }}"
+                  class="form-label"
+                  >Mother's Name</label
+                >
+                {{ form.mother_name_en }} {% if form.mother_name_en.errors %}
+                <div class="text-danger">{{ form.mother_name_en.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.spouse_name_en.id_for_label }}"
+                  class="form-label"
+                  >Spouse's Name</label
+                >
+                {{ form.spouse_name_en }} {% if form.spouse_name_en.errors %}
+                <div class="text-danger">{{ form.spouse_name_en.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.permanent_address_en.id_for_label }}"
+                  class="form-label"
+                  >Permanent Address</label
+                >
+                {{ form.permanent_address_en }} {% if
+                form.permanent_address_en.errors %}
+                <div class="text-danger">
+                  {{ form.permanent_address_en.errors }}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.issue_date_en.id_for_label }}"
+                  class="form-label"
+                  >Issue Date</label
+                >
+                {{ form.issue_date_en }} {% if form.issue_date_en.errors %}
+                <div class="text-danger">{{ form.issue_date_en.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.authority_en.id_for_label }}"
+                  class="form-label"
+                  >Issuing Authority</label
+                >
+                {{ form.authority_en }} {% if form.authority_en.errors %}
+                <div class="text-danger">{{ form.authority_en.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nepali Tab -->
+        <div
+          class="tab-pane fade"
+          id="nepali-data"
+          role="tabpanel"
+          aria-labelledby="nepali-tab"
+        >
+          <h4 class="mb-3">नेपाली डाटा</h4>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label
+                  for="{{ form.citizenship_no_np.id_for_label }}"
+                  class="form-label"
+                  >नागरिकता नंबर</label
+                >
+                {{ form.citizenship_no_np }} {% if form.citizenship_no_np.errors
+                %}
+                <div class="text-danger">
+                  {{ form.citizenship_no_np.errors }}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.full_name_np.id_for_label }}"
+                  class="form-label"
+                  >पूरा नाम</label
+                >
+                {{ form.full_name_np }} {% if form.full_name_np.errors %}
+                <div class="text-danger">{{ form.full_name_np.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.gender_np.id_for_label }}"
+                  class="form-label"
+                  >लिङ्ग</label
+                >
+                {{ form.gender_np }} {% if form.gender_np.errors %}
+                <div class="text-danger">{{ form.gender_np.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label for="{{ form.dob_np.id_for_label }}" class="form-label"
+                  >जन्म मिति</label
+                >
+                {{ form.dob_np }} {% if form.dob_np.errors %}
+                <div class="text-danger">{{ form.dob_np.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.birth_place_np.id_for_label }}"
+                  class="form-label"
+                  >जन्मस्थान</label
+                >
+                {{ form.birth_place_np }} {% if form.birth_place_np.errors %}
+                <div class="text-danger">{{ form.birth_place_np.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label
+                  for="{{ form.father_name_np.id_for_label }}"
+                  class="form-label"
+                  >बाबुको नाम</label
+                >
+                {{ form.father_name_np }} {% if form.father_name_np.errors %}
+                <div class="text-danger">{{ form.father_name_np.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.mother_name_np.id_for_label }}"
+                  class="form-label"
+                  >आमाको नाम</label
+                >
+                {{ form.mother_name_np }} {% if form.mother_name_np.errors %}
+                <div class="text-danger">{{ form.mother_name_np.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.spouse_name_np.id_for_label }}"
+                  class="form-label"
+                  >जीवनसाथीको नाम</label
+                >
+                {{ form.spouse_name_np }} {% if form.spouse_name_np.errors %}
+                <div class="text-danger">{{ form.spouse_name_np.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.permanent_address_np.id_for_label }}"
+                  class="form-label"
+                  >स्थायी ठेगाना</label
+                >
+                {{ form.permanent_address_np }} {% if
+                form.permanent_address_np.errors %}
+                <div class="text-danger">
+                  {{ form.permanent_address_np.errors }}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.issue_date_np.id_for_label }}"
+                  class="form-label"
+                  >जारी मिति</label
+                >
+                {{ form.issue_date_np }} {% if form.issue_date_np.errors %}
+                <div class="text-danger">{{ form.issue_date_np.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label
+                  for="{{ form.authority_np.id_for_label }}"
+                  class="form-label"
+                  >जारी गर्ने अधिकारी</label
+                >
+                {{ form.authority_np }} {% if form.authority_np.errors %}
+                <div class="text-danger">{{ form.authority_np.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary"
+          >Cancel</a
+        >
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -67,7 +67,9 @@ def upload_image(request):
                         back_file.close()
 
                 # Save raw OCR text as JSON representation for front data
-                front_data.text_result = json.dumps(extracted_data, indent=2)
+                front_data.text_result = json.dumps(
+                    extracted_data, indent=2, ensure_ascii=False
+                )
 
                 # Save English structured data to front model
                 front_data.full_name_en = extracted_data.get("full_name")
@@ -266,8 +268,8 @@ def edit_ocr_data(request, image_id):
                 ),
             }
 
-            # Update OcrImage text_result
-            ocr_image.text_result = json.dumps(data, indent=2)
+            # Update OcrImage text_result with proper encoding for Nepali characters
+            ocr_image.text_result = json.dumps(data, indent=2, ensure_ascii=False)
             ocr_image.save()
 
             messages.success(request, "Citizenship data updated successfully")

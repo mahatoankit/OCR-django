@@ -1,4 +1,4 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} {% load json_filters %} {% block content %}
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
     <h3>My Citizenship OCR Results</h3>
@@ -306,7 +306,7 @@
                   class="border p-2 bg-light"
                   style="max-height: 400px; overflow-y: auto"
                 >
-{{ upload.text_result|default:"No data detected" }}</pre
+{{ upload.text_result|format_json }}</pre
                 >
               </div>
             </div>

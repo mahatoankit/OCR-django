@@ -278,20 +278,21 @@ def extract_citizenship_data(image_file, is_front=True):
         return {}
 
 
-def process_citizenship_images(front_image, back_image=None):
-    """Process both sides of citizenship card and combine data"""
+def process_citizenship_images(front_image_file, back_image_file=None):
+    """Process citizenship card images and return extracted data"""
     combined_data = {}
 
     # Process front side
-    front_data = extract_citizenship_data(front_image, is_front=True)
+    front_data = extract_citizenship_data(front_image_file, is_front=True)
     combined_data.update(front_data)
 
     # Process back side if provided
-    if back_image:
-        back_data = extract_citizenship_data(back_image, is_front=False)
+    if back_image_file:
+        back_data = extract_citizenship_data(back_image_file, is_front=False)
         combined_data.update(back_data)
 
     # Add scan date
     combined_data["scan_date"] = datetime.now().strftime("%Y-%m-%d")
 
+    # Return the combined data which already has proper Nepali character encoding
     return combined_data

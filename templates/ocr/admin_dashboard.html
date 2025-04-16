@@ -1,4 +1,4 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} {% load json_filters %} {% block content %}
 <div class="card">
   <div class="card-header">
     <h3>Admin Dashboard - All Citizenship OCR Results</h3>
@@ -224,7 +224,7 @@
                         class="border p-2 bg-light mt-3"
                         style="max-height: 150px; overflow-y: auto"
                       >
-{{ upload.text_result|default:"No text detected" }}</pre
+{{ upload.text_result|format_json }}</pre
                       >
                     </div>
                   </div>
@@ -423,7 +423,7 @@
                         class="border p-2 bg-light mt-3"
                         style="max-height: 150px; overflow-y: auto"
                       >
-{{ upload.text_result|default:"No text detected" }}</pre
+{{ upload.text_result|format_json }}</pre
                       >
                     </div>
                   </div>

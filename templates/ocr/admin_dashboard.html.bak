@@ -1,0 +1,582 @@
+{% extends 'base.html' %} {% load json_filters %} {% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3>Admin Dashboard - All Citizenship OCR Results</h3>
+
+    <!-- Language toggle tabs -->
+    <ul class="nav nav-tabs mt-3" id="mainLangTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active"
+          id="english-main-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#english-data-main"
+          type="button"
+          role="tab"
+          aria-selected="true"
+        >
+          English
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="nepali-main-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#nepali-data-main"
+          type="button"
+          role="tab"
+          aria-selected="false"
+        >
+          नेपाली
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card-body">
+    {% if uploads %}
+    <div class="tab-content" id="mainLangTabsContent">
+      <!-- English Data Tab -->
+      <div
+        class="tab-pane fade show active"
+        id="english-data-main"
+        role="tabpanel"
+        aria-labelledby="english-main-tab"
+      >
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Citizenship #</th>
+                <th>Name</th>
+                <th>Upload Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for upload in uploads %}
+              <tr>
+                <td>{{ upload.user.username }}</td>
+                <td>{{ upload.front.citizenship_no_en|default:"Unknown" }}</td>
+                <td>{{ upload.front.full_name_en|default:"Not detected" }}</td>
+                <td>{{ upload.uploaded_at }}</td>
+                <td>
+                  <div class="btn-group">
+                    <button
+                      class="btn btn-sm btn-primary"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#details-en-{{ upload.id }}"
+                      aria-expanded="false"
+                    >
+                      View
+                    </button>
+                    <a
+                      href="{% url 'edit_ocr_data' upload.id %}"
+                      class="btn btn-sm btn-warning"
+                      >Edit</a
+                    >
+                    <a
+                      href="{% url 'delete_ocr_image' upload.id %}"
+                      class="btn btn-sm btn-danger"
+                      >Delete</a
+                    >
+                  </div>
+                </td>
+              </tr>
+              <tr class="collapse" id="details-en-{{ upload.id }}">
+                <td colspan="5">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="card mb-3">
+                        <div class="card-header">
+                          <h5>Images</h5>
+                        </div>
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col-6">
+                              <p>Front:</p>
+                              <img
+                                src="{{ upload.front.front_image.url }}"
+                                alt="Front Image"
+                                class="img-fluid mb-2"
+                              />
+                              {% if upload.front.labeled_front_image %}
+                              <p>Labeled Front:</p>
+                              <img
+                                src="{{ upload.front.labeled_front_image.url }}"
+                                alt="Labeled Front"
+                                class="img-fluid"
+                              />
+                              {% endif %}
+                            </div>
+                            <div class="col-6">
+                              {% if upload.back %}
+                              <p>Back:</p>
+                              <img
+                                src="{{ upload.back.back_image.url }}"
+                                alt="Back Image"
+                                class="img-fluid mb-2"
+                              />
+                              {% endif %} {% if upload.back and
+                              upload.back.labeled_back_image %}
+                              <p>Labeled Back:</p>
+                              <img
+                                src="{{ upload.back.labeled_back_image.url }}"
+                                alt="Labeled Back"
+                                class="img-fluid"
+                              />
+                              {% endif %}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-8">
+                      <!-- Language Navigation Tabs for details -->
+                      <ul
+                        class="nav nav-tabs mb-3"
+                        id="detailLangTabs{{ upload.id }}"
+                        role="tablist"
+                      >
+                        <li class="nav-item" role="presentation">
+                          <button
+                            class="nav-link active"
+                            id="en-details-tab{{ upload.id }}"
+                            data-bs-toggle="tab"
+                            data-bs-target="#en-details{{ upload.id }}"
+                            type="button"
+                            role="tab"
+                            aria-controls="en-details{{ upload.id }}"
+                            aria-selected="true"
+                          >
+                            English
+                          </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <button
+                            class="nav-link"
+                            id="np-details-tab{{ upload.id }}"
+                            data-bs-toggle="tab"
+                            data-bs-target="#np-details{{ upload.id }}"
+                            type="button"
+                            role="tab"
+                            aria-controls="np-details{{ upload.id }}"
+                            aria-selected="false"
+                          >
+                            नेपाली
+                          </button>
+                        </li>
+                      </ul>
+
+                      <div
+                        class="tab-content"
+                        id="detailLangTabsContent{{ upload.id }}"
+                      >
+                        <!-- English Details Tab -->
+                        <div
+                          class="tab-pane fade show active"
+                          id="en-details{{ upload.id }}"
+                          role="tabpanel"
+                          aria-labelledby="en-details-tab{{ upload.id }}"
+                        >
+                          <div class="table-responsive">
+                            <table class="table table-bordered">
+                              <tbody>
+                                <tr>
+                                  <th>Citizenship Number</th>
+                                  <td>
+                                    {% get_json_field upload.text_result
+                                    "citizenship_no" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>Full Name</th>
+                                  <td>
+                                    {% get_json_field upload.text_result
+                                    "full_name" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>Date of Birth</th>
+                                  <td>
+                                    {% get_json_field upload.text_result "dob"
+                                    %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>Gender</th>
+                                  <td>
+                                    {% get_json_field upload.text_result
+                                    "gender" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>Birth Place</th>
+                                  <td>
+                                    {% get_json_field upload.text_result
+                                    "birth_place" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>Father's Name</th>
+                                  <td>
+                                    {% get_json_field upload.text_result
+                                    "father_name" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>Mother's Name</th>
+                                  <td>
+                                    {% get_json_field upload.text_result
+                                    "mother_name" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>Permanent Address</th>
+                                  <td>
+                                    {% get_json_field upload.text_result
+                                    "permanent_address" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>Spouse's Name</th>
+                                  <td>
+                                    {% get_json_field upload.text_result
+                                    "spouse_name" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>Issue Date</th>
+                                  <td>
+                                    {% get_json_field upload.text_result
+                                    "issue_date" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>Issuing Authority</th>
+                                  <td>
+                                    {% get_json_field upload.text_result
+                                    "authority" %}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <!-- Nepali Details Tab -->
+                        <div
+                          class="tab-pane fade"
+                          id="np-details{{ upload.id }}"
+                          role="tabpanel"
+                          aria-labelledby="np-details-tab{{ upload.id }}"
+                        >
+                          <div class="table-responsive">
+                            <table class="table table-bordered">
+                              <tbody>
+                                <tr>
+                                  <th>नागरिकता नंबर</th>
+                                  <td dir="auto">
+                                    {% get_json_field upload.text_result
+                                    "citizenship_no_np" "पत्ता लागेन" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>पूरा नाम</th>
+                                  <td dir="auto">
+                                    {% get_json_field upload.text_result
+                                    "full_name_np" "पत्ता लागेन" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>जन्म मिति</th>
+                                  <td dir="auto">
+                                    {% get_json_field upload.text_result
+                                    "dob_np" "पत्ता लागेन" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>लिङ्ग</th>
+                                  <td dir="auto">
+                                    {% get_json_field upload.text_result
+                                    "gender_np" "पत्ता लागेन" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>जन्मस्थान</th>
+                                  <td dir="auto">
+                                    {% get_json_field upload.text_result
+                                    "birth_place_np" "पत्ता लागेन" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>बाबुको नाम</th>
+                                  <td dir="auto">
+                                    {% get_json_field upload.text_result
+                                    "father_name_np" "पत्ता लागेन" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>आमाको नाम</th>
+                                  <td dir="auto">
+                                    {% get_json_field upload.text_result
+                                    "mother_name_np" "पत्ता लागेन" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>स्थायी ठेगाना</th>
+                                  <td dir="auto">
+                                    {% get_json_field upload.text_result
+                                    "permanent_address_np" "पत्ता लागेन" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>जीवनसाथीको नाम</th>
+                                  <td dir="auto">
+                                    {% get_json_field upload.text_result
+                                    "spouse_name_np" "पत्ता लागेन" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>जारी मिति</th>
+                                  <td dir="auto">
+                                    {% get_json_field upload.text_result
+                                    "issue_date_np" "पत्ता लागेन" %}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th>जारी गर्ने अधिकारी</th>
+                                  <td dir="auto">
+                                    {% get_json_field upload.text_result
+                                    "authority_np" "पत्ता लागेन" %}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- End of tab-content -->
+
+                      <pre
+                        class="border p-2 bg-light mt-3"
+                        style="max-height: 150px; overflow-y: auto"
+                      >
+{{ upload.text_result|pretty_json|default:"No text detected" }}</pre
+                      >
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Nepali Data Tab -->
+      <div
+        class="tab-pane fade"
+        id="nepali-data-main"
+        role="tabpanel"
+        aria-labelledby="nepali-main-tab"
+      >
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>प्रयोगकर्ता</th>
+                <th>नागरिकता नंबर</th>
+                <th>नाम</th>
+                <th>अपलोड मिति</th>
+                <th>कार्यहरू</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for upload in uploads %}
+              <tr>
+                <td>{{ upload.user.username }}</td>
+                <td>{{ upload.front.citizenship_no_np|default:"अज्ञात" }}</td>
+                <td>{{ upload.front.full_name_np|default:"पत्ता लागेन" }}</td>
+                <td>{{ upload.uploaded_at }}</td>
+                <td>
+                  <div class="btn-group">
+                    <button
+                      class="btn btn-sm btn-primary"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#details-np-{{ upload.id }}"
+                      aria-expanded="false"
+                    >
+                      हेर्नुहोस्
+                    </button>
+                    <a
+                      href="{% url 'edit_ocr_data' upload.id %}"
+                      class="btn btn-sm btn-warning"
+                      >सम्पादन</a
+                    >
+                    <a
+                      href="{% url 'delete_ocr_image' upload.id %}"
+                      class="btn btn-sm btn-danger"
+                      >मेटाउनुहोस्</a
+                    >
+                  </div>
+                </td>
+              </tr>
+              <tr class="collapse" id="details-np-{{ upload.id }}">
+                <td colspan="5">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="card mb-3">
+                        <div class="card-header">
+                          <h5>तस्विरहरू</h5>
+                        </div>
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col-6">
+                              <p>अगाडि:</p>
+                              <img
+                                src="{{ upload.front.front_image.url }}"
+                                alt="Front Image"
+                                class="img-fluid mb-2"
+                              />
+                              {% if upload.front.labeled_front_image %}
+                              <p>लेबल गरिएको अगाडि:</p>
+                              <img
+                                src="{{ upload.front.labeled_front_image.url }}"
+                                alt="Labeled Front"
+                                class="img-fluid"
+                              />
+                              {% endif %}
+                            </div>
+                            <div class="col-6">
+                              {% if upload.back %}
+                              <p>पछाडि:</p>
+                              <img
+                                src="{{ upload.back.back_image.url }}"
+                                alt="Back Image"
+                                class="img-fluid mb-2"
+                              />
+                              {% endif %} {% if upload.back and
+                              upload.back.labeled_back_image %}
+                              <p>लेबल गरिएको पछाडि:</p>
+                              <img
+                                src="{{ upload.back.labeled_back_image.url }}"
+                                alt="Labeled Back"
+                                class="img-fluid"
+                              />
+                              {% endif %}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-8">
+                      <div class="table-responsive">
+                        <table class="table table-bordered">
+                          <tbody>
+                            <tr>
+                              <th>नागरिकता नंबर</th>
+                              <td dir="auto">
+                                {% get_json_field upload.text_result
+                                "citizenship_no_np" "पत्ता लागेन" %}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>पूरा नाम</th>
+                              <td dir="auto">
+                                {% get_json_field upload.text_result
+                                "full_name_np" "पत्ता लागेन" %}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>जन्म मिति</th>
+                              <td dir="auto">
+                                {% get_json_field upload.text_result "dob_np"
+                                "पत्ता लागेन" %}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>लिङ्ग</th>
+                              <td dir="auto">
+                                {% get_json_field upload.text_result "gender_np"
+                                "पत्ता लागेन" %}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>जन्मस्थान</th>
+                              <td dir="auto">
+                                {% get_json_field upload.text_result
+                                "birth_place_np" "पत्ता लागेन" %}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>बाबुको नाम</th>
+                              <td dir="auto">
+                                {% get_json_field upload.text_result
+                                "father_name_np" "पत्ता लागेन" %}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>आमाको नाम</th>
+                              <td dir="auto">
+                                {% get_json_field upload.text_result
+                                "mother_name_np" "पत्ता लागेन" %}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>स्थायी ठेगाना</th>
+                              <td dir="auto">
+                                {% get_json_field upload.text_result
+                                "permanent_address_np" "पत्ता लागेन" %}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>जीवनसाथीको नाम</th>
+                              <td dir="auto">
+                                {% get_json_field upload.text_result
+                                "spouse_name_np" "पत्ता लागेन" %}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>जारी मिति</th>
+                              <td dir="auto">
+                                {% get_json_field upload.text_result
+                                "issue_date_np" "पत्ता लागेन" %}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th>जारी गर्ने अधिकारी</th>
+                              <td dir="auto">
+                                {% get_json_field upload.text_result
+                                "authority_np" "पत्ता लागेन" %}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <pre
+                        class="border p-2 bg-light mt-3"
+                        style="max-height: 150px; overflow-y: auto"
+                      >
+{{ upload.text_result|pretty_json|default:"No text detected" }}</pre
+                      >
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p class="text-center">No images have been uploaded yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
